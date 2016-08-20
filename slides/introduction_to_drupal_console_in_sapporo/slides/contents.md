@@ -180,6 +180,14 @@ $ curl https://patch-diff.githubusercontent.com/raw/hechoendrupal/DrupalConsole/
 
 ---
 
+## 注意点その2 (2016/8/20 時点)
+
+- GNU tar 1.29以上の場合にtarの展開に失敗するバグがあります。Git for Windowsの最新版だとこれに当たるので、[2.9.0](https://github.com/git-for-windows/git/releases/tag/v2.9.0.windows.1) をお使いください。
+- SETXする時のコマンドプロンプトは管理者として実行してください(Windowsキー + x + Aで起動できます)
+- php.iniでphp_curl.dllとphp_openssl.dllも有効にしてください (ごめんなさい、ドキュメント直します。。)
+
+---
+
 ## なぜかWindowsサポートを頑張るハメに..
 
 - [support Git Bash on windows](https://github.com/hechoendrupal/DrupalConsole/pull/2507)
@@ -362,7 +370,7 @@ $ drupal generate:module --module=mymodule
 ### カスタムモジュールにentity(モデル)のCRUD機能を追加
 
 ```bash
-$ drupal generate:generate:entity:content --module=mymodule --has-bundles --is-translatable
+$ drupal generate:entity:content --module=mymodule --has-bundles --is-translatable
 
 生成または更新されたファイル
  サイトのパス: /Users/aoyama/drupal8.dev
