@@ -170,7 +170,14 @@ https://developer.mautic.org/#plugins
 
 ---
 
-MAツールをスタンドアーロンで運用するのではなく、既存のITインフラと接続し付加価値を生み出すことが重要。
+## マーケティング・オートケーションで何を解決したいのか？
+
+- 顧客ごとの興味に応じた最適なコンテンツを配信したい
+- 営業活動の効率をアップさせ、売上を上げたい
+
+---
+
+スタンドアーロンで運用するのではなく、既存のITインフラと接続し付加価値を生み出すための仕組みが重要。
 
 ![mautic_integration](https://s3-ap-northeast-1.amazonaws.com/assets.blauerberg.github.io/mautic_api/mautic_integraiton.png) <!-- .element: style="width: 85%;" -->
 
@@ -239,4 +246,4 @@ CMS (Drupal)内部のデータをREST API経由でMauticに送信。CMS側とMau
 
 - Mauticの登場により 「誰でも」「すぐに」マーケティングオートメーションを始められるようになった
 - Rest API、Webhook、pluginなど複数の仕組みが提供されており、簡単に他のシステムと連携可能
-- スタンドアローンで運用せず、APIを利用して既存のITインフラと接続し付加価値を生み出すがことが重要
+- これらの仕組みを利用して自社のサービスやプロダクトと接続できる環境を提供する事により、ビジネスチャンスが広がる。
