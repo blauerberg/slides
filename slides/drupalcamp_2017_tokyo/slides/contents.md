@@ -189,7 +189,7 @@ function respond_contents() {
 - Fast response to access from all over the world
 - More than 1,000,000 PV/month
 - More than 100,000 authenticated users
-- Many user/role specific contents, So almost user logged in to use the system
+- Many user/role specific contents, almost user logged in to use the system
 - Access log for every user
 - etc..
 
@@ -211,7 +211,7 @@ function respond_contents() {
 
 ---
 
-## ユーザー特有のコンテンツが多いとHTML全体をキャッシュすることは不可能
+## ユーザー特有のコンテンツが多いとHTML全体をキャッシュすることは難しい
 
 ---
 
@@ -231,16 +231,10 @@ https://en.wikipedia.org/wiki/Lazy_loading <!-- .element: class="grow" -->
 
 ---
 
-- ユーザー特有のコンテンツは全てLazy loadされるようにしておき、HTMLはCDNにキャッシュさせる
-- Lazy loadされるデータについてもDrupal内部でユーザー単位でキャッシュを生成し、高速にレスポンスを返す
-
----
-
 ## Cache strategy
 
-- CDN deriver contents from the edge server near the user
-- CDN won't not always return a completed page
-- User specific contents will be loaded lazy by Drupal (asynchronous, parallel)
+- CDN deriver contents from the edge server near the user.
+- CDN won't not always return a completed page. User specific contents will be loaded lazy by Drupal (parallelly & asynchronous), and then derivery and update partially.
 - Drupal try to return user specific contents from internal cache that is managed per user or role.
 - If internal cache doesn't exists, Drupal generate these contents and set contents to the internal cache to response faster in next time.
 
@@ -276,6 +270,12 @@ https://en.wikipedia.org/wiki/Lazy_loading <!-- .element: class="grow" -->
 
 ---
 
+### Lazy loading user specific contents.
+
+![lazy load](resources/images/lazy_load.png) <!-- .element: style="background: none; border: none; width: 70%;" -->
+
+---
+
 ## Implementation
 
 - Per user/role cache control
@@ -293,7 +293,7 @@ https://en.wikipedia.org/wiki/Lazy_loading <!-- .element: class="grow" -->
 
 ## Can we use this architecture in Drupal 8 ?
 
-### Yes! you can implement more easily using by awesome Cache API.
+### you can implement more easily using by awesome Cache API.
 <!-- .element: class="fragment" data-fragment-index="1" -->
 
 https://www.drupal.org/docs/8/api/cache-api
@@ -328,6 +328,82 @@ user
 
 ---
 
+core.services.yml
+```yml
+  ...
+  cache_context.user:
+    class: Drupal\Core\Cache\Context\UserCacheContext
+    arguments: ['@current_user']
+    tags:
+      - { name: cache.context}
+  cache_context.user.permissions:
+  ...
+```
+
+---
+
+UserCacheContext.php
+
+```php
+class UserCacheContext extends UserCacheContextBase implements CacheContextInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getLabel() {
+    return t('User');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContext() {
+    return $this->user->id();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheableMetadata() {
+    return new CacheableMetadata();
+  }
+}
+```
+<!-- .element: style="font-size: 0.5em;" -->
+
+---
+
+DatabaseBackend.php
+```php
+class DatabaseBackend implements CacheBackendInterface {
+  ...
+
+  public function get($cid, $allow_invalid = FALSE) {
+    $cids = array($cid);
+    $cache = $this->getMultiple($cids, $allow_invalid);
+    return reset($cache);
+  }
+
+  public function getMultiple(&$cids, $allow_invalid = FALSE) {
+    $cid_mapping = array();
+    foreach ($cids as $cid) {
+      $cid_mapping[$this->normalizeCid($cid)] = $cid;
+    }
+    $result = array();
+    try {
+      $result = $this->connection->query('SELECT cid, data, created, expire, serialized, tags, checksum FROM {' . $this->connection->escapeTable($this->bin) . '} WHERE cid IN ( :cids[] ) ORDER BY cid', array(':cids[]' => array_keys($cid_mapping)));
+    }
+
+    ...
+
+    return $cache;
+  }
+...
+```
+<!-- .element: style="font-size: 0.5em;" -->
+
+---
+
 ## Cache API
 
 D7同様のバックエンドに依存しないシンプルで統一されたAPI
@@ -347,4 +423,6 @@ public CacheBackendInterface::set($cid, $data, $expire = Cache::PERMANENT, array
 > Cache tags = data dependencies
 
 > Cache tags describe dependencies on data managed by Drupal
+
+ex. "user:1", "role:admin", "node:10"
 
